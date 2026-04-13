@@ -52,22 +52,26 @@ SUPABASE_ANON_KEY = _get_secret("SUPABASE_ANON_KEY")
 # Logging
 # ---------------------------------------------------------------------------
 def _setup_logging() -> logging.Logger:
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
-    log_name = f"multi_users_rag_{datetime.now().strftime('%Y%m%d')}.log"
-    log_path = LOG_DIR / log_name
-
     root = logging.getLogger()
     root.handlers.clear()
     root.setLevel(logging.WARNING)
 
     fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-    fh = logging.FileHandler(log_path, encoding="utf-8")
-    fh.setLevel(logging.WARNING)
-    fh.setFormatter(fmt)
+
+    try:
+        LOG_DIR.mkdir(parents=True, exist_ok=True)
+        log_name = f"multi_users_rag_{datetime.now().strftime('%Y%m%d')}.log"
+        log_path = LOG_DIR / log_name
+        fh = logging.FileHandler(log_path, encoding="utf-8")
+        fh.setLevel(logging.WARNING)
+        fh.setFormatter(fmt)
+        root.addHandler(fh)
+    except (PermissionError, OSError):
+        pass
+
     ch = logging.StreamHandler()
     ch.setLevel(logging.WARNING)
     ch.setFormatter(fmt)
-    root.addHandler(fh)
     root.addHandler(ch)
 
     for name in (
